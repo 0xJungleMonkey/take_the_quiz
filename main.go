@@ -1,13 +1,58 @@
 package main
 
 import (
+	"bufio"
 	"encoding/csv"
 	"fmt"
 	"io"
-	"log"
 	"os"
 )
 
+type Question struct {
+	ask    string
+	answer string
+}
+
+func quiz(records [][]string) {
+	score := 0
+	for _, record := range records {
+		ques := Question{
+			ask:    record[0],
+			answer: record[1],
+		}
+		fmt.Println(ques.ask)
+		// var then variable name then variable type
+		var first string
+
+		// Taking input from user
+		fmt.Scanln(&first)
+		if first == ques.answer {
+			fmt.Println("correct!")
+			score += 1
+		}
+
+	}
+	fmt.Printf("You get %d.", score)
+}
+
+func readCSV(rs io.ReadSeeker) ([][]string, error) {
+	//skip first row
+	row1, err := bufio.NewReader(rs).ReadSlice('\n')
+	if err != nil {
+		return nil, err
+	}
+	_, err = rs.Seek(int64(len(row1)), io.SeekStart)
+	if err != nil {
+		return nil, err
+	}
+	// Read remaining rows
+	r := csv.NewReader(rs)
+	rows, err := r.ReadAll()
+	if err != nil {
+		return nil, err
+	}
+	return rows, nil
+}
 func main() {
 	fi, err := os.Open("math.csv")
 	if err != nil {
@@ -19,16 +64,7 @@ func main() {
 			panic(err)
 		}
 	}()
-	
-	r := csv.NewReader(fi)
-	for {
-		record, err := r.Read()
-		if err == io.EOF {
-			break
-		}
-		if err != nil {
-			log.Fatal(err)
-		}
-		fmt.Println(record)
-	}
+
+	records, err := readCSV(fi)
+	quiz(records)
 }
