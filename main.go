@@ -70,5 +70,8 @@ func main() {
 	}()
 
 	records, err := readCSV(fi)
+	if err != nil {
+		panic(err)
+	}
 	quiz(records)
 }
