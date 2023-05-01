@@ -8,11 +8,33 @@ import (
 	"os"
 )
 
+// struct connect between csv [][]string and the quiz program, separate ask and answer for future use.
 type Question struct {
 	ask    string
 	answer string
 }
 
+// get the questions.
+func readCSV(rs io.ReadSeeker) ([][]string, error) {
+	//skip first row
+	row1, err := bufio.NewReader(rs).ReadSlice('\n')
+	if err != nil {
+		return nil, err
+	}
+	_, err = rs.Seek(int64(len(row1)), io.SeekStart)
+	if err != nil {
+		return nil, err
+	}
+	// Read remaining rows
+	r := csv.NewReader(rs)
+	rows, err := r.ReadAll()
+	if err != nil {
+		return nil, err
+	}
+	return rows, nil
+}
+
+// the main quiz process
 func quiz(records [][]string) {
 	score := 0
 	for _, record := range records {
@@ -35,24 +57,6 @@ func quiz(records [][]string) {
 	fmt.Printf("You get %d.", score)
 }
 
-func readCSV(rs io.ReadSeeker) ([][]string, error) {
-	//skip first row
-	row1, err := bufio.NewReader(rs).ReadSlice('\n')
-	if err != nil {
-		return nil, err
-	}
-	_, err = rs.Seek(int64(len(row1)), io.SeekStart)
-	if err != nil {
-		return nil, err
-	}
-	// Read remaining rows
-	r := csv.NewReader(rs)
-	rows, err := r.ReadAll()
-	if err != nil {
-		return nil, err
-	}
-	return rows, nil
-}
 func main() {
 	fi, err := os.Open("math.csv")
 	if err != nil {
